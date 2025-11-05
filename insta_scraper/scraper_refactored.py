@@ -2,9 +2,8 @@ import os
 import csv
 import random
 import requests
-import asyncio
 from dotenv import load_dotenv
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, TimeoutError
 from apify_client import ApifyClient
 
 load_dotenv()
@@ -267,9 +266,12 @@ def get_input():
     return username, number_of_posts, number_of_vips
 
 if __name__ == "__main__":
-    scraper = Scraper()
-    #username, number_of_posts, number_of_vips = get_input()
-    #scraper.scrape(username, number_of_posts, number_of_vips)
-    data = scraper.scrape("digitalartmuseum", 2, 3)
-    scraper.create_csv(data)
-    scraper.shutdown()
+    try:
+        scraper = Scraper()
+        #username, number_of_posts, number_of_vips = get_input()
+        #scraper.scrape(username, number_of_posts, number_of_vips)
+        data = scraper.scrape("digitalartmuseum", 2, 3)
+        scraper.create_csv(data)
+        scraper.shutdown()
+    except TimeoutError:
+        print("TimeoutError: Bad internet connection")

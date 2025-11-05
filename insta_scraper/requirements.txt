@@ -2,3 +2,9 @@ pandas
 nicegui
 playwright
 apify-client
+requests
+dotenv
+
+os
+csv
+random
