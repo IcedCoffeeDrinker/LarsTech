@@ -1,0 +1,4 @@
+pandas
+nicegui
+playwright
+apify-client
