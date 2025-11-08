@@ -5,11 +5,13 @@ import requests
 from dotenv import load_dotenv
 from playwright.sync_api import sync_playwright, TimeoutError
 from apify_client import ApifyClient
+from queue import Queue
 
 load_dotenv()
 
 class Scraper:
     def __init__(self):
+        self.log_queue = Queue()
         # initialize credentials
         self.username = os.getenv("INSTAGRAM_USERNAME")
         self.password = os.getenv("INSTAGRAM_PASSWORD")
@@ -21,7 +23,7 @@ class Scraper:
         self.page.goto("https://www.instagram.com")
         self.accept_cookies()
         self.login()
-        print("Scraper initialized")
+        self.log("Scraper initialized")
     
 
     ### Humanification Helper Functions ###
@@ -75,7 +77,7 @@ class Scraper:
         Additionally creates the main navigation page."""
         self.chrome = playwright.chromium
         self.browser = self.chrome.launch(
-            headless=True, # set to True for deployment
+            headless=False, # set to True for deployment
             # anti bot-detection measures
             args=[
                 '--no-sandbox',
@@ -103,16 +105,23 @@ class Scraper:
             geolocation={'latitude': 40.7128, 'longitude': -74.0060},  # NYC coordinates
         )
         self.page = self.context.new_page()
+        self.page.set_default_timeout(120000)
         self.page.add_init_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined});")
 
 
     def accept_cookies(self):
-        self.page.wait_for_selector("text='Allow all cookies'")
+        self.page.wait_for_load_state('load')
+        self.log("Page loaded")
+        try:
+            self.page.wait_for_selector("text='Allow all cookies'", timeout=random.randint(700, 1300))
+        except TimeoutError:
+            self.log("Cookies button does not exist")
+            return
         button = self.page.locator("text='Allow all cookies'")
         if button.is_visible():
             self.page.wait_for_timeout(random.randint(500, 1000))
             self.click_human_like(button)
-            print("Cookies accepted")
+            self.log("Cookies accepted")
 
 
     def login(self):
@@ -129,7 +138,7 @@ class Scraper:
         self.click_human_like(selector)
         
         self.page.wait_for_selector("div[class='x1n2onr6']")
-        print("Logged in successfully")
+        self.log("Logged in successfully")
     
 
     ### scraping tooling ###
@@ -157,7 +166,7 @@ class Scraper:
             if username:  # Only add non-empty usernames
                 usernames.append(username)
 
-        print(f"Identified {len(username)} accounts that liked the post")
+        self.log(f"Identified {len(username)} accounts that liked the post")
         self.sleep(liked_by_page)
         liked_by_page.close()
         return usernames
@@ -165,11 +174,11 @@ class Scraper:
 
     def open_next_post(self):
             try:
-                selector = self.page.locator("button[class='_abl-']")
+                selector = self.page.locator("button[class='_abl-']").filter(has_text="Next")
                 self.click_human_like(selector)
-                print("next post selected")
-            except Error as e:
-                print(e)
+                self.log("next post selected")
+            except Exception as e:
+                self.log(e)
     
 
     def identify_VIPs(self, usernames, top_n):
@@ -182,8 +191,11 @@ class Scraper:
         filtered_data = []
 
         for item in dataset.iterate_items():
+            url = item.get('url')
+            username = url.rstrip('/').split('/')[-1] if url else None
             filtered_item = {
-                'url': item.get('url'),
+                'url': url,
+                'username': username,
                 'followersCount': item.get('followersCount'),
                 'location': item.get('locationName')  # might be None
             }
@@ -192,7 +204,7 @@ class Scraper:
         # identify top_n users with most likes #! assuming n <= like count
         sorted_data = sorted(filtered_data, key=lambda x: x['followersCount'], reverse=True)
         top_users = sorted_data[:top_n]
-        print(f"Identified {len(top_users)} VIPs")
+        self.log(f"Identified {len(top_users)} VIPs")
         return top_users
 
 
@@ -204,6 +216,7 @@ class Scraper:
         self.sleep()
 
         # navigate to most recent post
+        self.page.wait_for_selector("a[href*='/p/']")
         first_post_link = self.page.locator("a[href*='/p/']").first
         self.click_human_like(first_post_link)
 
@@ -212,6 +225,7 @@ class Scraper:
         for i in range(number_of_posts):
             try:
                 # fetch people who liked the post
+                self.sleep()
                 liked_by_url = self.page.locator("a[href*='/liked_by/']")
                 liked_by_users = self.get_profile_likes(liked_by_url)
 
@@ -221,8 +235,8 @@ class Scraper:
 
                 # move to the next less-recent post 
                 self.open_next_post()
-            except Error as e:
-                print(e)
+            except Exception as e:
+                self.log(e)
         return vip_interested_profiles
 
     
@@ -233,22 +247,33 @@ class Scraper:
         with open('vip_profiles.csv', mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             # Write the header
-            header = ['Post Number', 'Username', 'Followers Count', 'Location', 'Profile URL']
+            header = ['Post Number', 'VIP Rank', 'Username', 'Followers Count', 'Location', 'Profile URL']
             writer.writerow(header)
 
             # Write data for each post
             for post in vip_interested_profiles:
                 post_number = post[0]
+                vip_count = 1
                 for vip in post[1:]:
+                    location = vip.get('location', 'N/A')
+                    if location == None or location == '' or location == 'None':
+                        location = 'N/A'
                     writer.writerow([
                         f'Post #{post_number}',
+                        f'VIP #{vip_count}',
                         vip.get('username'),
                         vip.get('followersCount', 'N/A'),
-                        vip.get('location', 'N/A'),
+                        location,
                         vip.get('url')
                     ])
+                    vip_count += 1
 
 
+    ### Logging ###
+    def log(self, message):
+        self.log_queue.put(message)
+        print(message)
+       
     ### Clean-Up ###
 
     def shutdown(self):
@@ -266,12 +291,12 @@ def get_input():
     return username, number_of_posts, number_of_vips
 
 if __name__ == "__main__":
+    scraper = Scraper()
     try:
-        scraper = Scraper()
         #username, number_of_posts, number_of_vips = get_input()
         #scraper.scrape(username, number_of_posts, number_of_vips)
-        data = scraper.scrape("digitalartmuseum", 2, 3)
+        data = scraper.scrape("bormannrene", 2, 3)
         scraper.create_csv(data)
         scraper.shutdown()
     except TimeoutError:
-        print("TimeoutError: Bad internet connection")
+        scraper.log("TimeoutError: Bad internet connection")
