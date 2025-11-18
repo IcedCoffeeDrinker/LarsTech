@@ -155,29 +155,50 @@ class Scraper:
     def navigate_to_post(self, post_link):
         self.sleep()
         self.page.goto(post_link)
-        
+    
 
-    def get_profile_likes(self, url):
+    def get_profile_likes(self, post_url):
         # create second page listing all accounts that liked
         liked_by_page = self.context.new_page()
-        href = url.get_attribute("href")
-        liked_by_page.goto(f"https://instagram.com{href}")
+        liked_by_page.goto(f"{post_url}liked_by/")
 
         self.human_behaviour(liked_by_page)
         self.sleep(liked_by_page)
         
-        username_elements = liked_by_page.locator("._ap3a._aaco._aacw._aacx._aad7._aade")
         usernames = []
-        count = username_elements.count()
-        for i in range(count):
-            element = username_elements.nth(i)
-            username = element.inner_text().strip()
-            if username:  # Only add non-empty usernames
-                usernames.append(username)
+        while True:
+            username_elements = liked_by_page.locator("._ap3a._aaco._aacw._aacx._aad7._aade")
+            count = username_elements.count()
+            new_usernames = []
 
-        self.log(f"Identified {len(usernames)} accounts that liked the post")
-        self.sleep(liked_by_page)
-        liked_by_page.close()
+            for i in range(count):
+                element = username_elements.nth(i)
+                username = element.inner_text().strip()
+                if username and username not in usernames:  # Avoid duplicates
+                    new_usernames.append(username)
+
+            if not new_usernames:
+                break  # Exit loop if no new usernames are found
+
+            usernames.extend(new_usernames)
+            self.log(f"Found {len(new_usernames)} new usernames")
+            liked_by_page.evaluate("window.scrollBy(0, document.body.scrollHeight)")
+        self.log(f"Found {len(usernames)} usernames in total")
+        return usernames
+
+
+    def get_profile_likes_Apify(self, post_url): # only for <1000 likes
+        run_input = {
+            "posts": [post_url],
+            #"resultsType": "likes",  # This handles pagination automatically
+            "max_count": 1_000,
+        }
+        run = self.client.actor("datadoping/instagram-likes-scraper").call(run_input=run_input)
+        dataset = self.client.dataset(run["defaultDatasetId"])
+        usernames = []
+        for item in dataset.iterate_items():
+            usernames.append(item.get('username'))
+        self.log(f"Found {len(usernames)} usernames in total")
         return usernames
 
 
@@ -239,8 +260,8 @@ class Scraper:
             try:
                 # fetch people who liked the post
                 self.sleep()
-                liked_by_url = self.page.locator("a[href*='/liked_by/']")
-                liked_by_users = self.get_profile_likes(liked_by_url)
+                post_url = self.page.url
+                liked_by_users = self.get_profile_likes(post_url)
 
                 # extract users with most followers
                 vip_users = self.identify_VIPs(liked_by_users, top_n_vips)
@@ -253,20 +274,16 @@ class Scraper:
         return vip_interested_profiles
 
     def scrape_single_post(self, post_link, top_n_vips):
-        self.navigate_to_post(post_link)
-        self.sleep()
-
-        liked_by_url = self.page.locator("a[href*='/liked_by/']")
-        liked_by_users = self.get_profile_likes(liked_by_url)
-        vip_users = [] #self.identify_VIPs(liked_by_users, top_n_vips)
-        return vip_users
+        liked_by_users = self.get_profile_likes_Apify(post_link)
+        vip_users = self.identify_VIPs(liked_by_users, top_n_vips)
+        return [[1] + vip_users]
 
     
     ### Post-Processing ###
 
     def create_csv(self, vip_interested_profiles):
         # Create CSV with the necessary headers
-        with open('data/vip_profiles.csv', mode='w', newline='', encoding='utf-8') as file:
+        with open('vip_profiles.csv', mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             # Write the header
             header = ['Post Number', 'VIP Rank', 'Username', 'Followers Count', 'Location', 'Profile URL']

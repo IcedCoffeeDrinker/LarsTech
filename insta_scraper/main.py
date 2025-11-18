@@ -6,8 +6,8 @@ scraper = Scraper()
 
 ### CLI ###
 while True:
+    print("Type Ctrl+C to exit")
     try:
-        print("Type Ctrl+C to exit")
         scraper_mode = input("Do you want to scrape a profile or a single post? (profile/post): ")
         if scraper_mode == "profile":
             username = input("Enter the username of the profile to scrape: ")
@@ -18,7 +18,9 @@ while True:
             post_link = input("Enter the link of the post to scrape: ")
             number_of_vips = int(input("Enter the number of VIPs to scrape: "))
             data = scraper.scrape_single_post(post_link, number_of_vips)
-        
+        else:
+            print("Invalid mode. Please try again.")
+            continue
         scraper.create_csv(data)
     except KeyboardInterrupt:
         print("Exiting...")
