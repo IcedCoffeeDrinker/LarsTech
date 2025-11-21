@@ -283,7 +283,7 @@ class Scraper:
 
     def create_csv(self, vip_interested_profiles):
         # Create CSV with the necessary headers
-        with open('vip_profiles.csv', mode='w', newline='', encoding='utf-8') as file:
+        with open('data/vip_profiles.csv', mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
             # Write the header
             header = ['Post Number', 'VIP Rank', 'Username', 'Followers Count', 'Location', 'Profile URL']
