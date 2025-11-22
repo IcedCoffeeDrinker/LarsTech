@@ -1,5 +1,4 @@
 from apify_scraper import ApifyScraper
-from playwright.sync_api import TimeoutError
 from nicegui import ui
 import csv
 import asyncio
@@ -191,6 +190,8 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
 
         ui.space()
 
+        origin_finder_button = ui.button('AI Origin Analysis', icon='search').tooltip('(Coming Soon!) Location Determination via Biography Analysis')    
+        origin_finder_button.set_enabled(False)
         download_button = ui.button('Download CSV', icon='download')
         download_button.props('csv_path=' + 'data/last_scrape.csv')
         download_button.on('click', lambda: ui.download('data/last_scrape.csv'))
