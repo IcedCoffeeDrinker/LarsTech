@@ -1,6 +1,3 @@
-pandas
 nicegui
-playwright
 apify-client
-requests
-dotenv
+python-dotenv
