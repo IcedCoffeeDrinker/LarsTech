@@ -58,7 +58,7 @@ class ApifyScraper:
         for item in self.client.dataset(run["defaultDatasetId"]).iterate_items():
             posts.append(item)
         
-        self.log(f"Found {len(posts)} posts (+2 to compensate for duplicates)")
+        self.log(f"-> Found {len(posts)} posts (+2 to compensate for duplicates)")
         return posts
 
 
@@ -75,7 +75,7 @@ class ApifyScraper:
         # sort by timestamp
         unique_posts.sort(key=lambda x: x.get('timestamp'), reverse=True)
 
-        self.log(f"Cleaned {len(unique_posts)} posts")
+        self.log(f"-> Cleaned {len(unique_posts)} posts")
         return unique_posts[:number_of_posts]
 
 
@@ -90,7 +90,7 @@ class ApifyScraper:
         usernames = []
         for item in dataset.iterate_items():
             usernames.append(item.get('username'))
-        self.log(f"Found {len(usernames)} users that liked the post")
+        self.log(f"-> Found {len(usernames)} users that liked the post")
         return usernames
 
 
@@ -114,7 +114,7 @@ class ApifyScraper:
                 'location': item.get('locationName')  # might be None
             }
             filtered_data.append(filtered_item)
-        self.log(f"Data for {len(filtered_data)} users received")
+        self.log(f"-> Data for {len(filtered_data)} users received")
         # identify top_n users with most likes #! assuming n <= like count
         sorted_data = sorted(
             (item for item in filtered_data if item['followersCount'] is not None),
@@ -122,7 +122,7 @@ class ApifyScraper:
             reverse=True
         )
         top_users = sorted_data[:top_n]
-        self.log(f"Identified {len(top_users)} VIPs")
+        self.log(f"-> Identified {len(top_users)} VIPs")
         return top_users
     
 
@@ -156,7 +156,7 @@ class ApifyScraper:
                     ])
 
         shutil.copy(csv_path, 'data/last_scrape.csv')
-        self.log(f"CSV ready to download")
+        self.log(f"-> CSV ready to download")
         return csv_path
 
 

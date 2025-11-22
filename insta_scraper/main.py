@@ -178,6 +178,13 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
         </q-td>
     ''')
 
+    table.add_slot('body-cell-profile_url', '''
+        <q-td :props="props">
+            <a :href="props.value" target="_blank" style="color: #1976d2; text-decoration: none;">
+                {{ props.value }}
+            </a>
+        </q-td>
+    ''')
 
     with ui.row().classes('w-full items-center q-my-md'):
         ui.label('Scraper Logs').classes('text-h4 q-mt-md') 
