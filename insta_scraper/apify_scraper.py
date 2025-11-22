@@ -103,7 +103,6 @@ class ApifyScraper:
         run = self.client.actor("dSCLg0C3YEZ83HzYX").call(run_input=run_input)
         dataset = self.client.dataset(run["defaultDatasetId"])
         filtered_data = []
-        self.log(f"Dat for {len(dataset)} users received")
 
         for item in dataset.iterate_items():
             url = item.get('url')
@@ -115,7 +114,7 @@ class ApifyScraper:
                 'location': item.get('locationName')  # might be None
             }
             filtered_data.append(filtered_item)
-
+        self.log(f"Data for {len(filtered_data)} users received")
         # identify top_n users with most likes #! assuming n <= like count
         sorted_data = sorted(
             (item for item in filtered_data if item['followersCount'] is not None),

@@ -45,12 +45,13 @@ def add_row(post_number, post_url, vip_rank, username, followers, location, prof
 
 ### GUI ###
 def show_csv(path):
+    table.rows.clear()
     with open(path, 'r') as file:
         reader = csv.reader(file)
         next(reader) # skip header
         for row in reader:
             add_row(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
-
+    
 
 ### Scraping Functions ###
 async def start_scraping():
@@ -65,14 +66,14 @@ async def start_scraping():
             data = await asyncio.to_thread(
                 scraper.scrape_single_post,
                 link_input.value,
-                int(number_of_vips_input.value)
+                int(number_of_vips_post_input.value)
             )
         elif mode_selector.value == "Entire Profile":
             data = await asyncio.to_thread(
                 scraper.scrape_profile_posts,
                 profile_input.value,
                 int(number_of_posts_input.value),
-                int(number_of_vips_input.value)
+                int(number_of_vips_profile_input.value)
             )
         ui.notify('Done!', type='positive')
         # create csv and auto download
@@ -81,7 +82,7 @@ async def start_scraping():
         ui.download(csv_path)
         # additional download button
         download_button.props('csv_path=' + csv_path)
-        download_button.set_visibility(True)
+        #download_button.set_visibility(True)
         download_button.on('click', lambda: ui.download(csv_path))
     finally:
         if mode_selector.value == "Single Post":
@@ -91,9 +92,18 @@ async def start_scraping():
         mode_selector.set_enabled(True)
 
 
+def load_last_scrape():
+    table.rows.clear()
+    scraper.log("Loading last scrape results")
+    try: 
+        show_csv("data/last_scrape.csv")
+    except FileNotFoundError:
+        scraper.log("-> No previous scrape found")
+
+        
 ### Initialize UI ###
 # title
-ui.label('Collaborator Scraper').classes('text-h2').style('''
+ui.label('Prospect Discovery Tool').classes('text-h2').style('''
     position: absolute; 
     top: 40px; 
     left: 50%; 
@@ -118,6 +128,11 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
             placeholder="e.g. https://www.instagram.com/p/1234567890/",
             validation={'Post Link must be a valid Instagram post link': lambda value: value.startswith('https://www.instagram.com/p/') or value == ""}
             ).on('keydown.enter', lambda: link_input.run_method('blur'))
+        number_of_vips_post_input = ui.input(
+            label="Number of VIPs", 
+            placeholder="e.g. 5", 
+            validation={'Number of VIPs must be an integer': lambda value: value.isdigit() or value == ""}
+            ).on('keydown.enter', lambda: number_of_vips_input.run_method('blur'))
         scrape_button_post = ui.button('Scrape', on_click=start_scraping)   
 
     with ui.row().classes('items-center') as profile_mode:
@@ -131,7 +146,7 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
             placeholder="e.g. 2", 
             validation={'Number of Posts must be an integer': lambda value: value.isdigit() or value == ""}
             ).on('keydown.enter', lambda: number_of_posts_input.run_method('blur'))
-        number_of_vips_input = ui.input(
+        number_of_vips_profile_input = ui.input(
             label="Number of VIPs", 
             placeholder="e.g. 5", 
             validation={'Number of VIPs must be an integer': lambda value: value.isdigit() or value == ""}
@@ -160,48 +175,23 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
     ''')
 
 
-    ui.label('Scraper Logs').classes('text-h6 q-mt-md')
+    with ui.row().classes('w-full items-center q-my-md'):
+        ui.label('Scraper Logs').classes('text-h4 q-mt-md') 
+
+        ui.space()
+
+        download_button = ui.button('Download CSV', icon='download')
+        download_button.props('csv_path=' + 'data/last_scrape.csv')
+        download_button.on('click', lambda: ui.download('data/last_scrape.csv'))
+
+
     log_view = ui.log(max_lines=100).classes('w-full h-64')
-    ui.timer(0.1, update_logs) 
+    ui.timer(0.1, update_logs)
 
-
-    download_button = ui.button('Download CSV', icon='download', on_click=lambda: ui.download(csv_path))
-    download_button.set_visibility(False)
-
-
-### CLI ###
-def main():
-    while True:
-        print("Type Ctrl+C to exit")
-        try:
-            scraper_mode = input("Do you want to scrape a profile or a single post? (profile/post): ")
-            if scraper_mode == "profile":
-                username = input("Enter the username of the profile to scrape: ")
-                number_of_posts = int(input("Enter the number of posts to scrape: "))
-                number_of_vips = int(input("Enter the number of VIPs to scrape: "))
-                data = scraper.scrape_profile_posts(username, number_of_posts, number_of_vips)
-            elif scraper_mode == "post":
-                post_link = input("Enter the link of the post to scrape: ")
-                number_of_vips = int(input("Enter the number of VIPs to scrape: "))
-                data = scraper.scrape_single_post(post_link, number_of_vips)
-            else:
-                print("Invalid mode. Please try again.")
-                continue
-            scraper.create_csv(data)
-        except KeyboardInterrupt:
-            print("Exiting...")
-            break
-        except TimeoutError:
-            print("Timeout error. Please try again.")
-            continue
-        except Exception as e:
-            print(f"Failed due to Error: {e}")
-        
-    scraper.shutdown()
 
 if __name__ in {"__main__", "__mp_main__"}:
     #main()
     ui.run()
     scraper.log("UI Initialized")
     #add_row(1, 1, "John Doe", 1000, "New York", "https://www.example.com")
-    show_csv("data/last_scrape.csv")
+    load_last_scrape()
