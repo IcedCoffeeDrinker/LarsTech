@@ -122,7 +122,7 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
 
     mode_selector = ui.toggle(["Single Post", "Entire Profile"], value="Single Post", on_change=on_mode_change)
 
-    with ui.row().classes('items-center') as post_mode:
+    with ui.row().classes('items-center w-full') as post_mode:
         link_input = ui.input(
             label="Enter Post Link", 
             placeholder="e.g. https://www.instagram.com/p/1234567890/",
@@ -134,8 +134,10 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
             validation={'Number of VIPs must be an integer': lambda value: value.isdigit() or value == ""}
             ).on('keydown.enter', lambda: number_of_vips_input.run_method('blur'))
         scrape_button_post = ui.button('Scrape', on_click=start_scraping)   
+        ui.space()
+        ui.chip('As of now reloading the page will stop the scraper.', icon='info', color='blue-grey').props('outline')
 
-    with ui.row().classes('items-center') as profile_mode:
+    with ui.row().classes('items-center w-full') as profile_mode:
         profile_input = ui.input(
             label="Enter Profile Name", 
             placeholder="e.g. larshinrichs",
@@ -152,6 +154,8 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
             validation={'Number of VIPs must be an integer': lambda value: value.isdigit() or value == ""}
             ).on('keydown.enter', lambda: number_of_vips_input.run_method('blur'))
         scrape_button_profile = ui.button('Scrape', on_click=start_scraping)
+        ui.space()
+        ui.chip('As of now reloading the page will stop the scraper.', icon='info', color='blue-grey').props('outline')
 
     profile_mode.set_visibility(False)
 
