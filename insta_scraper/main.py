@@ -172,7 +172,7 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
         ui.space()
         ui.chip('As of now reloading the page will stop the scraper.', icon='info', color='blue-grey').props('outline')
 
-    profile_mode.set_visibility(False)
+    on_mode_change() # hides post mode items
 
 
     columns = [

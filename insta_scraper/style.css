@@ -147,6 +147,10 @@ body::before {
     
     .q-chip__content {
         white-space: normal !important;
+        text-align: center !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     
     .q-chip .q-icon {
