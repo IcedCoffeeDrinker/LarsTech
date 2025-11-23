@@ -42,7 +42,7 @@ class ApifyScraper:
 
 
     def get_profile_posts(self, username, number_of_posts):
-        self.log(f"Requesting {number_of_posts} posts for {username}")
+        self.log(f"Requesting {number_of_posts} posts for {username} (takes up to 2 minutes)")
         run_input = {
             "username": [
                 username,
@@ -80,7 +80,7 @@ class ApifyScraper:
 
 
     def get_profile_likes_Apify(self, post_url): # gets first 1000 likes
-        self.log(f"Requesting likes for {post_url}")
+        self.log(f"Requesting likes for {post_url} (takes up to 5 minutes)")
         run_input = {
             "posts": [post_url],
             "max_count": 1_000,
