@@ -83,6 +83,8 @@ async def start_scraping():
         download_button.props('csv_path=' + csv_path)
         #download_button.set_visibility(True)
         download_button.on('click', lambda: ui.download(csv_path))
+    except Exception as e:
+        scraper.log(f"Error: {e}")
     finally:
         if mode_selector.value == "Single Post":
             scrape_button_post.set_enabled(True)
