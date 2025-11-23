@@ -119,19 +119,17 @@ with open('ht_favicon.png', 'rb') as f:
     ''')
 
 # title
-ui.label('Prospect Discovery Tool').classes('text-h2').style('''
-    position: absolute; 
-    top: 40px; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    z-index: 0; 
-    font-weight: bold;
-    background: linear-gradient(to bottom, #333333 10%, #333333 30%, #888888 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-''')
+ui.html('''
+    <div class="text-h2" 
+         style="position: absolute; top: 40px; left: 50%; 
+                transform: translateX(-50%); z-index: 0; 
+                font-weight: bold; 
+                background: linear-gradient(to bottom, #333333 10%, #333333 30%, #888888 100%);
+                -webkit-background-clip: text; background-clip: text; 
+                -webkit-text-fill-color: transparent; color: transparent;">
+        Prospect Discovery<span class="mobile-break"> </span>Tool
+    </div>
+''', sanitize=False)
 
 # main body container
 with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1; margin-top: 120px;'):
