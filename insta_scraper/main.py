@@ -101,6 +101,21 @@ def load_last_scrape():
 
         
 ### Initialize UI ###
+with open('style.css', 'r') as f:
+    ui.add_head_html(f'<style>{f.read()}</style>')
+
+ui.page_title('Hinrichs Tech')
+
+# Embed favicon as base64
+import base64
+with open('ht_favicon.png', 'rb') as f:
+    favicon_base64 = base64.b64encode(f.read()).decode()
+    ui.add_head_html(f'''
+        <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,{favicon_base64}">
+        <link rel="shortcut icon" type="image/png" href="data:image/png;base64,{favicon_base64}">
+        <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,{favicon_base64}">
+    ''')
+
 # title
 ui.label('Prospect Discovery Tool').classes('text-h2').style('''
     position: absolute; 
@@ -109,7 +124,7 @@ ui.label('Prospect Discovery Tool').classes('text-h2').style('''
     transform: translateX(-50%); 
     z-index: 0; 
     font-weight: bold;
-    background: linear-gradient(to bottom, #333333 10%, #333333 30%, #dddddd 100%);
+    background: linear-gradient(to bottom, #333333 10%, #333333 30%, #888888 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;

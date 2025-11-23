@@ -1,0 +1,128 @@
+/* Moving Grid Background */
+body {
+    background-color: #ffffff;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: -100px;
+    left: -100px;
+    right: -100px;
+    bottom: -100px;
+    background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 0;
+    animation: moveGrid 20s linear infinite;
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+@keyframes moveGrid {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(50px, 50px, 0);
+    }
+}
+
+/* Ensure content stays on top */
+.nicegui-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Title styling */
+.text-h2 {
+    position: relative;
+    display: inline-block;
+}
+
+.text-h2::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, transparent 0%, transparent 25%, black 50%, transparent 75%, transparent 100%);
+}
+
+/* Mobile responsive title */
+@media (max-width: 768px) {
+    .text-h2 {
+        font-size: 1.5rem !important;
+        max-width: calc(100vw - 120px) !important;
+        text-align: center;
+        padding: 0 10px;
+    }
+}
+
+.text-h4 {
+    position: relative;
+    display: inline-block;
+}
+
+.text-h4::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(to right, transparent 0%, transparent 25%, black 50%, transparent 75%, transparent 100%);
+}
+
+/* Button styling */
+.q-btn {
+    padding: 8px 20px !important;
+    font-size: 15px !important;
+    min-height: 42px !important;
+}
+
+/* Logs with solid background */
+.nicegui-log,
+.q-virtual-scroll {
+    background-color: #ffffff !important;
+    position: relative;
+    z-index: 10;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+}
+
+/* Table hover effects */
+.q-table tbody tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.q-table tbody tr:hover {
+    background-color: #f0f7ff !important;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.2);
+}
+
+.q-table tbody tr td {
+    transition: color 0.2s ease;
+}
+
+.q-table tbody tr:hover td {
+    color: #1976d2;
+}
+
+.q-table tbody tr a {
+    transition: color 0.2s ease;
+}
+
+.q-table tbody tr:hover a {
+    color: #0d47a1;
+}
+
+.q-table {
+    background-color: #ffffff !important;
+}
+
