@@ -3,6 +3,7 @@ from nicegui import ui
 import csv
 import asyncio
 import time
+import re
 
 ### Initialize Scraper ###
 
@@ -155,7 +156,7 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
         profile_input = ui.input(
             label="Enter Profile Name", 
             placeholder="e.g. larshinrichs",
-            validation={'Profile Name must be a valid Instagram username': lambda value: value.isalpha() or value == ""}
+            validation={'Profile Name must be a valid Instagram username': lambda value: re.match(r'^[a-zA-Z0-9._]+$', value) or value == ""}
             ).on('keydown.enter', lambda: number_of_posts_input.run_method('blur'))
         number_of_posts_input = ui.input(
             label="Number of Posts", 

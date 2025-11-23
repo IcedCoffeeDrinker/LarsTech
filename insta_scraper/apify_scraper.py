@@ -31,8 +31,11 @@ class ApifyScraper:
         for i, post in enumerate(cleaned_posts):
             post_url = post.get('url')
             usernames = self.get_profile_likes_Apify(post_url)
-            vip_users = self.identify_VIPs(usernames, top_n_vips)
-            vip_interested_profiles.append([i+1, post_url] + vip_users)
+            if usernames != []:
+                vip_users = self.identify_VIPs(usernames, top_n_vips)
+                vip_interested_profiles.append([i+1, post_url] + vip_users)
+            else:
+                self.log(f"-> No likes available for post {post_url}")
         return vip_interested_profiles
 
     def log(self, message):
