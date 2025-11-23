@@ -56,10 +56,154 @@ body::before {
 /* Mobile responsive title */
 @media (max-width: 768px) {
     .text-h2 {
-        font-size: 1.5rem !important;
-        max-width: calc(100vw - 120px) !important;
+        font-size: 1.8rem !important;
+        max-width: 100% !important;
+        width: 100% !important;
         text-align: center;
-        padding: 0 10px;
+        padding: 0 20px;
+        top: 10px !important;
+        white-space: normal !important;
+        line-height: 1.2 !important;
+        background: linear-gradient(to bottom, #333333 0%, #333333 50%, #888888 100%) !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+    
+    .text-h2 .mobile-break {
+        display: block !important;
+    }
+    
+    /* Adjust main content spacing on mobile */
+    .q-mt-xl {
+        margin-top: 140px !important;
+    }
+    
+    /* Reduce element sizes for mobile */
+    .q-btn {
+        padding: 4px 10px !important;
+        font-size: 0.75rem !important;
+        min-height: 32px !important;
+        min-width: auto !important;
+    }
+    
+    .q-field {
+        font-size: 0.8rem !important;
+        max-width: 100% !important;
+    }
+    
+    .q-field__control {
+        height: 56px !important;
+        min-height: 56px !important;
+        padding-top: 10px !important;
+        padding-bottom: 6px !important;
+    }
+    
+    .q-field__native {
+        font-size: 0.8rem !important;
+        padding: 6px 8px !important;
+        margin-top: 4px !important;
+    }
+    
+    .q-field__label {
+        font-size: 0.7rem !important;
+        top: 8px !important;
+    }
+    
+    .q-field--float .q-field__label {
+        transform: translateY(-40%) scale(0.75) !important;
+    }
+    
+    .q-toggle {
+        font-size: 0.8rem !important;
+        transform: scale(0.9) !important;
+        transform-origin: center !important;
+    }
+    
+    .q-toggle__label {
+        font-size: 0.8rem !important;
+    }
+    
+    /* Make rows stack on mobile */
+    .items-center {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+    }
+    
+    .items-center > * {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+    
+    /* Allow chip text to wrap on mobile */
+    .q-chip {
+        white-space: normal !important;
+        height: auto !important;
+        min-height: 28px !important;
+        font-size: 0.75rem !important;
+        padding: 4px 8px !important;
+    }
+    
+    .q-chip__content {
+        white-space: normal !important;
+    }
+    
+    .q-chip .q-icon {
+        font-size: 1rem !important;
+    }
+    
+    /* Table text size */
+    .q-table {
+        font-size: 0.8rem !important;
+    }
+    
+    .q-table th,
+    .q-table td {
+        padding: 6px 8px !important;
+        font-size: 0.75rem !important;
+    }
+    
+    /* Log text size */
+    .nicegui-log {
+        font-size: 0.75rem !important;
+    }
+    
+    .text-h4 {
+        font-size: 1.2rem !important;
+    }
+    
+    /* Reorder elements in the log title row on mobile */
+    .q-my-md.items-center {
+        display: flex !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .q-my-md.items-center .text-h4 {
+        order: 3 !important;
+        width: 100% !important;
+        margin-top: 10px !important;
+        text-align: center !important;
+    }
+    
+    .q-my-md.items-center .text-h4::after {
+        left: 50% !important;
+        right: auto !important;
+        transform: translateX(-50%) !important;
+        width: 80% !important;
+    }
+    
+    .q-my-md.items-center .q-space {
+        display: none !important;
+    }
+    
+    /* Ensure content is fully scrollable */
+    .nicegui-content {
+        padding-bottom: 60px !important;
+    }
+    
+    .nicegui-log {
+        margin-bottom: 40px !important;
     }
 }
 
