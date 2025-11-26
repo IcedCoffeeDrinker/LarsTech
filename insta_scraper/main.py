@@ -4,6 +4,11 @@ import csv
 import asyncio
 import time
 import re
+import requests
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ### Initialize Scraper ###
 
@@ -84,6 +89,8 @@ async def start_scraping():
         download_button.props('csv_path=' + csv_path)
         #download_button.set_visibility(True)
         download_button.on('click', lambda: ui.download(csv_path))
+
+        update_api_usage()
     except Exception as e:
         scraper.log(f"Error: {e}")
     finally:
@@ -102,7 +109,25 @@ def load_last_scrape():
     except FileNotFoundError:
         scraper.log("-> No previous scrape found")
 
-        
+
+def update_api_usage():
+    scraper.log("Updating API usage")
+    response = requests.get(
+        "https://api.apify.com/v2/users/me/limits",
+        headers={"Authorization": "Bearer " + os.getenv("APIFY_API_TOKEN")}
+    )
+
+    data = response.json()
+
+    current_usage = data["data"]["current"]["monthlyUsageUsd"]
+    max_usage = data["data"]["limits"]["maxMonthlyUsageUsd"]
+    progress = current_usage / max_usage
+    api_usage_bar.set_value(progress)
+    api_usage_label.set_text(f'Current Usage: ${current_usage:.2f} / ${max_usage}')
+    
+    print(f"Current: ${current_usage:.2f}")
+    print(f"Limit: ${max_usage}")
+
 ### Initialize UI ###
 with open('style.css', 'r') as f:
     ui.add_head_html(f'<style>{f.read()}</style>')
@@ -175,6 +200,10 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
     on_mode_change() # hides post mode items
 
 
+    api_usage_label = ui.label('Current Usage: $0.00 / $0.00').classes('text-sm text-grey-7')
+    api_usage_bar =ui.linear_progress(show_value=False).props('size="8px"').style('width: 50%;')
+
+
     columns = [
         {'name': 'post_number', 'label': 'Post Number', 'field': 'post_number', 'sortable': True},
         {'name': 'vip_rank', 'label': 'VIP Rank', 'field': 'vip_rank', 'sortable': True},
@@ -223,3 +252,4 @@ if __name__ in {"__main__", "__mp_main__"}:
     scraper.log("UI Initialized")
     #add_row(1, 1, "John Doe", 1000, "New York", "https://www.example.com")
     load_last_scrape()
+    update_api_usage()
