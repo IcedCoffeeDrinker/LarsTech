@@ -53,6 +53,9 @@ def show_csv(path):
     table.rows.clear()
     with open(path, 'r') as file:
         reader = csv.reader(file)
+        query_info = next(reader)[0]
+        query_info = query_info.replace('# Query Info:', '').strip()
+        query_label.set_text(query_info)
         next(reader) # skip header
         for row in reader:
             add_row(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
@@ -67,13 +70,16 @@ async def start_scraping():
         scrape_button_profile.set_enabled(False)
     ui.notify('Starting scrape...', type='info')
     try:
+        query_info = ""
         if mode_selector.value == "Single Post":
+            query_info = f"Single Post: {link_input.value}, Top {number_of_vips_post_input.value} VIPs"
             data = await asyncio.to_thread(
                 scraper.scrape_single_post,
                 link_input.value,
                 int(number_of_vips_post_input.value)
             )
         elif mode_selector.value == "Entire Profile":
+            query_info = f"Profile: {profile_input.value}, {number_of_posts_input.value} posts, Top {number_of_vips_profile_input.value} VIPs"
             data = await asyncio.to_thread(
                 scraper.scrape_profile_posts,
                 profile_input.value,
@@ -82,7 +88,7 @@ async def start_scraping():
             )
         ui.notify('Done!', type='positive')
         # create csv and auto download
-        csv_path = scraper.create_csv(data)
+        csv_path = scraper.create_csv(data, query_info)
         show_csv(csv_path)
         ui.download(csv_path)
         # additional download button
@@ -111,22 +117,31 @@ def load_last_scrape():
 
 
 def update_api_usage():
-    scraper.log("Updating API usage")
-    response = requests.get(
-        "https://api.apify.com/v2/users/me/limits",
-        headers={"Authorization": "Bearer " + os.getenv("APIFY_API_TOKEN")}
-    )
+    test = True
+    if test:
+        api_usage_bar.set_value(0.25)
+        api_usage_label.set_text(f'Current Usage: ${12.362:.2f} / ${69.00}')
+        return
+    try:
+        scraper.log("Updating API usage")
+        response = requests.get(
+            "https://api.apify.com/v2/users/me/limits",
+            headers={"Authorization": "Bearer " + os.getenv("APIFY_API_TOKEN")}
+        )
 
-    data = response.json()
+        data = response.json()
 
-    current_usage = data["data"]["current"]["monthlyUsageUsd"]
-    max_usage = data["data"]["limits"]["maxMonthlyUsageUsd"]
-    progress = current_usage / max_usage
-    api_usage_bar.set_value(progress)
-    api_usage_label.set_text(f'Current Usage: ${current_usage:.2f} / ${max_usage}')
-    
-    print(f"Current: ${current_usage:.2f}")
-    print(f"Limit: ${max_usage}")
+        current_usage = data["data"]["current"]["monthlyUsageUsd"]
+        max_usage = data["data"]["limits"]["maxMonthlyUsageUsd"]
+        progress = current_usage / max_usage
+        api_usage_bar.set_value(progress)
+        api_usage_label.set_text(f'Current Usage: ${current_usage:.2f} / ${max_usage}')
+        
+        print(f"Current: ${current_usage:.2f}")
+        print(f"Limit: ${max_usage}")
+    except Exception as e:
+        scraper.log(f"Error: {e}")
+
 
 ### Initialize UI ###
 with open('style.css', 'r') as f:
@@ -199,10 +214,15 @@ with ui.column().classes('q-mt-xl w-full').style('position: relative; z-index: 1
 
     on_mode_change() # hides post mode items
 
-
-    api_usage_label = ui.label('Current Usage: $0.00 / $0.00').classes('text-sm text-grey-7')
-    api_usage_bar =ui.linear_progress(show_value=False).props('size="8px"').style('width: 50%;')
-
+    with ui.row().classes('w-full gap-4 q-mb-md items-stretch'):
+        with ui.card().classes('col'):
+            ui.label('API Usage').classes('text-weight-bold')
+            api_usage_label = ui.label('Current Usage: $0.00 / $0.00').classes('text-sm text-grey-7')
+            api_usage_bar = ui.linear_progress(show_value=False).props('size="8px"')
+        
+        with ui.card().classes('col'):
+            ui.label('Query Details').classes('text-weight-bold')
+            query_label = ui.label('No query yet').classes('text-grey-9')
 
     columns = [
         {'name': 'post_number', 'label': 'Post Number', 'field': 'post_number', 'sortable': True},

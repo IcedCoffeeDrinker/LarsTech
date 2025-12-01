@@ -129,13 +129,16 @@ class ApifyScraper:
         return top_users
     
 
-    def create_csv(self, vip_interested_profiles):
+    def create_csv(self, vip_interested_profiles, query_info):
         self.log(f"Creating CSV...")
         # Create CSV with the necessary headers
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         csv_path = f'data/vip_profiles_{timestamp}.csv'
         with open(csv_path, mode='w', newline='', encoding='utf-8') as file:
             writer = csv.writer(file)
+
+            # Write query info in first column only, leave rest empty
+            writer.writerow([f'# Query Info: {query_info}', '', '', '', '', '', ''])
             # Write the header
             header = ['Post Number', 'Post URL', 'VIP Rank', 'Username', 'Followers Count', 'Location', 'Profile URL']
             writer.writerow(header)
