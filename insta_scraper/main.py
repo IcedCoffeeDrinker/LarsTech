@@ -117,7 +117,7 @@ def load_last_scrape():
 
 
 def update_api_usage():
-    test = True
+    test = False
     if test:
         api_usage_bar.set_value(0.25)
         api_usage_label.set_text(f'Current Usage: ${12.362:.2f} / ${69.00}')
